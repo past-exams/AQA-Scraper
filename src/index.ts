@@ -1,18 +1,17 @@
 import DEBUG from 'debug';
 import env from 'env-var';
-import puppeteer from 'puppeteer';
+import {request} from 'gaxios';
+import {load} from 'cheerio';
 
 const debug = DEBUG('PE-aqa-scraper:/src/index.ts');
 
-
-(async () => {
-    const browser = await puppeteer.launch({
-        headless: env.get('PUPPETEER_HEADLESS').asBool()
-    });
-    const page = await browser.newPage();
-    await page.goto(env.get('AQA_BASE_URL').required().asUrlString());
-
-    //await browser.close();
-})();
+request({
+    url: env.get('AQA_BASE_URL').required().asUrlString()
+}).then(r => {
+    const $ = load(r.data.toString());
+    $('#subjects option').each((index, option) =>{
+        debug(option.children[0].data + " " + option.attribs['value'])
+    })
+});
 
 debug('Starting aqa-scraper');
